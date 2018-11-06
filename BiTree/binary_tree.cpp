@@ -67,7 +67,8 @@ Status InitSStack(SStack *S) {
 }
 
 Status push(SStack *s, BT b) {
-	s->bt[s->top++] = b;
+	s->bt[s->top] = b;
+	s->top++;
 	return OK;
 }
 
@@ -77,6 +78,9 @@ Status SStackEmpty(SStack s) {
 
 BT pop(SStack *s) {
 	if (!SStackEmpty(*s)){
+		/*
+			BT T = s->bt[--s->top];
+		*/
 		s->top--;
 		BT T = s->bt[s->top];
 		return T;		
@@ -169,17 +173,17 @@ Status InOrderTraverse(BT T, int(*V)(TElemType e)) {;
 	InitSStack(&s);
 	push(&s, T);
 	while (!SStackEmpty(s)) {
+		//while (SStackTop(&s, &b) && b->lc) {
 		while (SStackTop(&s, &b) && b) {	
 			push(&s, b->lc);
-			b = SStackTop(s);
 		}
 		b = pop(&s);
 		if (!SStackEmpty(s))
 		{
 			b = pop(&s);
 			V(b->data);
+			//if(b->rc)
 			push(&s, b->rc);
-
 		}
 	}
 	return 1;
@@ -233,6 +237,26 @@ Status PostOrderTraverse2(BT T, int(*V)(TElemType)) {
 	return 0;
 }
 
+Status PostOrderTraverse3(BT T, int(*V)(TElemType)) {
+	SStack tr,st;
+	BT bt;
+	InitSStack(&st); InitSStack(&tr);
+	push(&st, T);push(&tr, T);	
+	while (!SStackEmpty(tr))
+	{
+		while (SStackTop(&tr, &bt)&&bt) {
+			push(&st, bt->rc); push(&tr, bt->rc);
+		}
+		pop(&st); pop(&tr); //¿ÕÖ¸ÕëÍËÕ»
+		if(!SStackEmpty(tr)){
+			bt = pop(&tr);
+			push(&tr, bt->lc);push(&st, bt->lc);	
+		}		
+	}
+	while (!SStackEmpty(st)) V(pop(&st)->data);
+	return 0;
+}
+
 
 Status LevelOrderTraverse(BT T, int(*V)(TElemType)) {
 	QQueue qe;
@@ -261,8 +285,7 @@ Status LevelOrderTraverseR(BT T,int (*V)(TElemType)) {
 		LevelOrderTraverseR(T->lc, V);
 		LevelOrderTraverseR(T->rc, V);
 	}
-	else return 0;
-	
+	else return 0;	
 }
 
 int main(int argc, int **argv) {
@@ -273,11 +296,13 @@ int main(int argc, int **argv) {
 	//1 2 4 0 5 0 0 0 3 0 0
 	//PreOrderTraverseR(bt, PrintElement);
 	//InOrderTraverseR(bt, PrintElement);
+	//InOrderTraverse(bt, PrintElement);
 	//PostOrderTraverseR(bt, PrintElement);
 	//PostOrderTraverse(bt, PrintElement);
 	//LevelOrderTraverse(bt, PrintElement);
 	//LevelOrderTraverseR(bt, PrintElement);
-	PostOrderTraverse2(bt, PrintElement);
+	//PostOrderTraverse3(bt, PrintElement);
+	//PostOrderTraverse2(bt, PrintElement);
 	system("pause");
 	return 0;
 }
