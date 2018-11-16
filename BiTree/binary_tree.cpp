@@ -34,6 +34,15 @@ int QQueueEmpty(QQueue qe) {
 	return qe.front == qe.rear;
 }
 
+Status DeQueue(QQueue *q, BT* t) {
+	if (!QQueueEmpty(*q)) {
+		*t = (*q).data[(*q).front];
+		(*q).front++;
+		return OK;
+	}
+	else return ERROR;
+}
+
 Status Dequeue(QQueue *qe) {
 	if (!QQueueEmpty(*qe)) {
 		qe->front++;
@@ -98,6 +107,12 @@ Status SStackTop(SStack *st, BT *b) {
 		return OK;
 	}
 	else return 0;
+}
+
+Status InitBiTree(BT* T) {
+	*T = (BT)malloc(sizeof bt_node);
+	(*T)->lc = (*T)->rc = NULL;
+	return OK;
 }
 
 Status CreatBiTree(BT *T) {
@@ -278,12 +293,16 @@ Status LevelOrderTraverse(BT T, int(*V)(TElemType)) {
 	}
 	return OK;
 }
-
+QQueue qq;
 Status LevelOrderTraverseR(BT T,int (*V)(TElemType)) {
+	BT b;
 	if (T) {
 		V(T->data);
-		LevelOrderTraverseR(T->lc, V);
-		LevelOrderTraverseR(T->rc, V);
+		if (T->lc) Enqueue(&qq,T->lc);
+		if (T->rc) Enqueue(&qq,T->rc);
+		if (QQueueEmpty(qq)) return OK;
+		DeQueue(&qq, &T);
+		LevelOrderTraverseR(T, V);
 	}
 	else return 0;	
 }
@@ -291,6 +310,8 @@ Status LevelOrderTraverseR(BT T,int (*V)(TElemType)) {
 int main(int argc, int **argv) {
 	BT bt;
 	CreatBiTree(&bt);
+	InitQQueue(&qq);
+
 	//
 	//1 2 4 0 0 5 0 0 3 6 0 0 0
 	//1 2 4 0 5 0 0 0 3 0 0
@@ -303,6 +324,7 @@ int main(int argc, int **argv) {
 	//LevelOrderTraverseR(bt, PrintElement);
 	//PostOrderTraverse3(bt, PrintElement);
 	//PostOrderTraverse2(bt, PrintElement);
+	//const char *p = "123";
 	system("pause");
 	return 0;
 }
